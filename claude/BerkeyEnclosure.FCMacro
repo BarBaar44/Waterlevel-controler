@@ -1,0 +1,330 @@
+# -*- coding: utf-8 -*-
+# Berkey fill controller: printed enclosure for the rev G carrier board
+# (130 x 80 mm, relays on the board, 28 Sep 2026)
+#
+# Run in FreeCAD: Macro > Macros... > select this file > Execute.
+# Every dimension is in the PARAMETERS block. Change a number, run again,
+# and the Base and Lid objects are rebuilt in a fresh document.
+#
+# Board coordinates follow claude/NETLIST.md: millimetres from the board's
+# bottom left corner, X to the right, Y up, as seen in the EasyEDA top view.
+# All field wiring leaves on the top edge (J2, J3, J4, J5, J9); DC2 is on
+# the right edge. The relays are on the board, so there is no relay bay.
+#
+# 3 Oct 2026: one spare M12 hole on the right wall, level with J9, for a
+# future backup solenoid wired in parallel with the valve's open winding
+# (J9 OPEN and COM, twin ferrules). Fit a blanking plug until it is used.
+# It is on the right wall because the top wall has no room left: between
+# J5 and J9 two M12 locknuts would clash, and right of J9 the hole would
+# cut into the corner screw boss.
+
+import FreeCAD as App
+import Part
+
+V = App.Vector
+
+# ---------------------------------------------------------------- PARAMETERS
+
+# Board
+PCB_W, PCB_D, PCB_T = 130.0, 80.0, 1.6
+PCB_HOLES = [(4, 4), (126, 4), (4, 76), (126, 76)]
+
+# Space between board edge and inner wall. The top carries every cable,
+# so it gets room to bend a wire into a terminal. Left and bottom must be
+# at least 8.5 so the board clears the lid screw bosses in the corners.
+# The right side holds the DC2 plug tube and the spare solenoid gland.
+GAP_L, GAP_B = 9.0, 9.0
+GAP_R, GAP_T = 10.0, 18.0
+
+# Extra modules on printed standoffs, off the carrier board. Empty since
+# rev G put the relays on the board. Format, if ever needed again:
+# (name, (x, y) lower left in board coordinates, (w, d), [holes relative
+#  to that corner], standoff height, standoff hole, module height)
+SUBBOARDS = []
+SUB_STANDOFF_OD = 6.0
+
+# Shell
+WALL = 2.5
+FLOOR = 2.5
+CORNER_R = 5.0            # outside corner radius
+
+# Board standoffs, printed into the floor
+STANDOFF_H = 6.0          # floor to underside of the board
+STANDOFF_OD = 8.0         # 2 mm wall around a 4.0 mm hole for the M3 x L5 x OD4.2 inserts
+STANDOFF_HOLE = 4.0       # M3 x L5 x OD4.2 heat-set insert (2.5 for a self-tapping M3)
+
+# Height. Tallest part is the LM2596 module in its socket. MEASURE IT:
+# socket height + module height, then add a few mm.
+CLEAR_ABOVE_PCB = 30.0
+
+# Lid
+LID_T = 3.0
+LIP_H = 4.0               # locating lip that drops inside the walls
+LIP_T = 1.6
+LIP_CLEAR = 0.3           # per side, between lip and wall
+BOSS_R = 4.5              # lid screw bosses, in the four inner corners
+BOSS_HOLE = 4.0           # M3 x L5 x OD4.2 heat-set insert
+BOSS_HOLE_DEPTH = 6.0
+LID_SCREW = 3.4           # clearance hole for M3
+LID_HEAD_D, LID_HEAD_DEPTH = 6.5, 1.5   # counterbore for the screw head
+
+# Cable glands: (board coordinate along that edge, hole diameter).
+# Hole 12.3 = M12 x 1.5, 16.3 = M16 x 1.5.
+# The probe lead measures 7 mm. Most M12 glands clamp 3 to 6.5 mm, so the
+# probes default to M16. Check the clamping range of what you bought.
+GLANDS_TOP = [             # X along the top edge
+    (19.7, 16.3),          # J2, probe 1 (upper)
+    (43.0, 16.3),          # J3, probe 2 (lower)
+    (63.5, 12.3),          # J4, flow sensor
+    (82.0, 12.3),          # J5, float switch
+    (113.5, 12.3),         # J9, valve cable
+]
+GLANDS_RIGHT = [           # Y along the right edge
+    (71.0, 12.3),          # SPARE, future backup solenoid to J9 OPEN/COM.
+                           # Blanking plug until used. Clears the DC2 tube
+                           # (Y 16.65), the top right boss (from Y 89) and
+                           # the mounting ears (on the floor plane)
+]
+GLANDS_LEFT = []           # Y along the left wall
+GLAND_Z_ABOVE_PCB = 12.0   # gland centre height above the board's top face
+
+# DC2 barrel jack. It sits flush with the board's right edge, GAP_R from the
+# wall, so a tube bridges the gap and guides the plug in.
+JACK = True
+JACK_Y = 16.65             # board Y of the barrel axis (DC2 pad 1, EasyEDA 28 Sep)
+JACK_Z_ABOVE_PCB = 6.5     # DC-005 hole centre above the board. MEASURE IT
+JACK_BORE = 11.5           # must pass the plug's body, not just the barrel
+JACK_TUBE_OD = 15.5
+JACK_TUBE_GAP = 0.5        # tube end to board edge
+
+# Mounting ears, on the left and right walls near both ends
+EARS = True
+EAR_W, EAR_L, EAR_T = 14.0, 12.0, 4.0
+EAR_HOLE = 4.5
+
+# Reference objects (board, DC2, terminals) for a visual fit check
+SHOW_REFERENCE = True
+
+# ------------------------------------------------------------- DERIVED
+
+IW = GAP_L + PCB_W + GAP_R                 # inner width
+ID = GAP_B + PCB_D + GAP_T                 # inner depth
+OW, OD = IW + 2 * WALL, ID + 2 * WALL
+PCB_Z = FLOOR + STANDOFF_H                 # underside of the board
+PCB_TOP = PCB_Z + PCB_T
+BASE_H = PCB_TOP + CLEAR_ABOVE_PCB         # base, outside bottom to rim
+GLAND_Z = PCB_TOP + GLAND_Z_ABOVE_PCB
+JACK_Z = PCB_TOP + JACK_Z_ABOVE_PCB
+INNER_R = max(CORNER_R - WALL, 0.0)
+
+
+def bx(x):
+    """Board X to world X."""
+    return WALL + GAP_L + x
+
+
+def by(y):
+    """Board Y to world Y."""
+    return WALL + GAP_B + y
+
+
+# ------------------------------------------------------------- HELPERS
+
+def box(x, y, z, w, d, h):
+    return Part.makeBox(w, d, h, V(x, y, z))
+
+
+def cyl_z(cx, cy, z, r, h):
+    return Part.makeCylinder(r, h, V(cx, cy, z), V(0, 0, 1))
+
+
+def cyl_x(x, cy, cz, r, length):
+    return Part.makeCylinder(r, length, V(x, cy, cz), V(1, 0, 0))
+
+
+def cyl_y(cx, y, cz, r, length):
+    return Part.makeCylinder(r, length, V(cx, y, cz), V(0, 1, 0))
+
+
+def rbox(x, y, z, w, d, h, r):
+    """Box with vertical edges rounded to radius r."""
+    if r <= 0.01:
+        return box(x, y, z, w, d, h)
+    s = box(x + r, y, z, w - 2 * r, d, h)
+    s = s.fuse(box(x, y + r, z, w, d - 2 * r, h))
+    for cx, cy in ((x + r, y + r), (x + w - r, y + r),
+                   (x + r, y + d - r), (x + w - r, y + d - r)):
+        s = s.fuse(cyl_z(cx, cy, z, r, h))
+    return s
+
+
+def fuse_all(base, parts):
+    for p in parts:
+        base = base.fuse(p)
+    return base
+
+
+def cut_all(base, parts):
+    for p in parts:
+        base = base.cut(p)
+    return base
+
+
+def boss_centres():
+    o = WALL + BOSS_R
+    return [(o, o), (OW - o, o), (o, OD - o), (OW - o, OD - o)]
+
+
+# ------------------------------------------------------------- BASE
+
+def build_base():
+    shell = rbox(0, 0, 0, OW, OD, BASE_H, CORNER_R)
+    cavity = rbox(WALL, WALL, FLOOR, IW, ID, BASE_H, INNER_R)
+    shell = shell.cut(cavity)
+
+    adds, cuts = [], []
+
+    # Lid screw bosses, merged into the corner walls
+    boss_h = BASE_H - FLOOR
+    for cx, cy in boss_centres():
+        adds.append(cyl_z(cx, cy, FLOOR, BOSS_R, boss_h))
+        fx = WALL if cx < OW / 2 else cx
+        fy = WALL if cy < OD / 2 else cy
+        adds.append(box(fx, fy, FLOOR, BOSS_R, BOSS_R, boss_h))
+        cuts.append(cyl_z(cx, cy, BASE_H - BOSS_HOLE_DEPTH,
+                          BOSS_HOLE / 2, BOSS_HOLE_DEPTH + 1))
+
+    # Board standoffs; holes stop at the floor so the floor stays closed
+    for hx, hy in PCB_HOLES:
+        adds.append(cyl_z(bx(hx), by(hy), FLOOR - 0.1, STANDOFF_OD / 2,
+                          STANDOFF_H + 0.1))
+        cuts.append(cyl_z(bx(hx), by(hy), FLOOR, STANDOFF_HOLE / 2,
+                          STANDOFF_H + 1))
+
+    # Gland holes, top wall (Y+), right wall (X+) and left wall (X-)
+    for gx, dia in GLANDS_TOP:
+        cuts.append(cyl_y(bx(gx), OD - WALL - 1, GLAND_Z, dia / 2, WALL + 2))
+    for gy, dia in GLANDS_RIGHT:
+        cuts.append(cyl_x(OW - WALL - 1, by(gy), GLAND_Z, dia / 2, WALL + 2))
+    for gy, dia in GLANDS_LEFT:
+        cuts.append(cyl_x(-1, by(gy), GLAND_Z, dia / 2, WALL + 2))
+
+    # Standoffs for any off-board modules (none since rev G)
+    for _n, (sx, sy), _sz, holes, sh, shole, _h in SUBBOARDS:
+        for hx, hy in holes:
+            cx, cy = bx(sx + hx), by(sy + hy)
+            adds.append(cyl_z(cx, cy, FLOOR - 0.1, SUB_STANDOFF_OD / 2, sh + 0.1))
+            cuts.append(cyl_z(cx, cy, FLOOR, shole / 2, sh + 1))
+
+    # DC2 plug tube and bore
+    if JACK:
+        tube_x0 = bx(PCB_W) + JACK_TUBE_GAP
+        tube_len = (OW - WALL) - tube_x0 + 0.5
+        adds.append(cyl_x(tube_x0, by(JACK_Y), JACK_Z,
+                          JACK_TUBE_OD / 2, tube_len))
+        cuts.append(cyl_x(tube_x0 - 1, by(JACK_Y), JACK_Z,
+                          JACK_BORE / 2, OW - tube_x0 + 2))
+
+    # Mounting ears, flat on the floor plane
+    if EARS:
+        for ey in (WALL + EAR_W / 2 + 4, OD - WALL - EAR_W / 2 - 4):
+            for side in (-1, 1):
+                x0 = -EAR_L if side < 0 else OW - 1
+                adds.append(box(x0, ey - EAR_W / 2, 0, EAR_L + 1, EAR_W, EAR_T))
+                tip = -EAR_L if side < 0 else OW + EAR_L
+                adds.append(cyl_z(tip, ey, 0, EAR_W / 2, EAR_T))
+                cuts.append(cyl_z(tip, ey, -1, EAR_HOLE / 2, EAR_T + 2))
+
+    shell = fuse_all(shell, adds)
+    shell = cut_all(shell, cuts)
+    return shell.removeSplitter()
+
+
+# ------------------------------------------------------------- LID
+
+def build_lid():
+    lid = rbox(0, 0, BASE_H, OW, OD, LID_T, CORNER_R)
+
+    c = LIP_CLEAR
+    lr = max(INNER_R - c, 0.5)
+    lip = rbox(WALL + c, WALL + c, BASE_H - LIP_H,
+               IW - 2 * c, ID - 2 * c, LIP_H + 0.1, lr)
+    lip = lip.cut(rbox(WALL + c + LIP_T, WALL + c + LIP_T, BASE_H - LIP_H - 1,
+                       IW - 2 * (c + LIP_T), ID - 2 * (c + LIP_T), LIP_H + 2,
+                       max(lr - LIP_T, 0.3)))
+    # Clear the lip around the corner bosses
+    s = 2 * BOSS_R + 1.5
+    for cx, cy in boss_centres():
+        lip = lip.cut(box(cx - s / 2, cy - s / 2, BASE_H - LIP_H - 1, s, s, LIP_H + 1.5))
+    lid = lid.fuse(lip)
+
+    for cx, cy in boss_centres():
+        lid = lid.cut(cyl_z(cx, cy, BASE_H - 1, LID_SCREW / 2, LID_T + 2))
+        lid = lid.cut(cyl_z(cx, cy, BASE_H + LID_T - LID_HEAD_DEPTH,
+                            LID_HEAD_D / 2, LID_HEAD_DEPTH + 1))
+    return lid.removeSplitter()
+
+
+# ------------------------------------------------------------- REFERENCE
+
+def build_reference():
+    """Rough stand-ins, not to scale beyond footprints. For eyeballing only."""
+    parts = {}
+    pcb = box(bx(0), by(0), PCB_Z, PCB_W, PCB_D, PCB_T)
+    for hx, hy in PCB_HOLES:
+        pcb = pcb.cut(cyl_z(bx(hx), by(hy), PCB_Z - 1, 1.6, PCB_T + 2))
+    parts["Ref_PCB"] = pcb
+    parts["Ref_DC2"] = box(bx(PCB_W - 14), by(JACK_Y - 4.5), PCB_TOP, 14, 9, 11)
+    parts["Ref_Terminals_top"] = box(bx(10), by(66), PCB_TOP, 61, 10, 10)
+    parts["Ref_J5"] = box(bx(76), by(66), PCB_TOP, 10, 10, 10)
+    parts["Ref_J9"] = box(bx(106), by(66), PCB_TOP, 15, 10, 10)
+    parts["Ref_K1"] = box(bx(104), by(30), PCB_TOP, 19, 15.5, 15.5)
+    parts["Ref_K2"] = box(bx(104), by(48), PCB_TOP, 19, 15.5, 15.5)
+    parts["Ref_ESP32"] = box(bx(10 - 1.5), by(8 - 8), PCB_TOP, 28.4, 52, 14)
+    parts["Ref_LM2596"] = box(bx(41), by(12), PCB_TOP, 43, 21,
+                              CLEAR_ABOVE_PCB - 5)
+    for name, (sx, sy), (sw, sd), _holes, sh, _hole, h in SUBBOARDS:
+        parts["Ref_" + name] = box(bx(sx), by(sy), FLOOR + sh, sw, sd, h)
+    return parts
+
+
+# ------------------------------------------------------------- RUN
+
+def main():
+    doc = App.newDocument("BerkeyEnclosure")
+    base = build_base()
+    lid = build_lid()
+
+    ob = doc.addObject("Part::Feature", "Base")
+    ob.Shape = base
+    ol = doc.addObject("Part::Feature", "Lid")
+    ol.Shape = lid
+
+    refs = build_reference() if SHOW_REFERENCE else {}
+    ref_objs = []
+    for name, shp in refs.items():
+        o = doc.addObject("Part::Feature", name)
+        o.Shape = shp
+        ref_objs.append(o)
+
+    doc.recompute()
+
+    if App.GuiUp:
+        import FreeCADGui as Gui
+        ob.ViewObject.ShapeColor = (0.85, 0.87, 0.9)
+        ol.ViewObject.ShapeColor = (0.6, 0.72, 0.82)
+        ol.ViewObject.Transparency = 60
+        for o in ref_objs:
+            o.ViewObject.ShapeColor = (0.2, 0.55, 0.3)
+            o.ViewObject.Transparency = 40
+        Gui.activeDocument().activeView().viewIsometric()
+        Gui.SendMsgToActiveView("ViewFit")
+
+    App.Console.PrintMessage(
+        "Berkey enclosure: outside %.1f x %.1f x %.1f mm (base), lid %.1f mm\n"
+        % (OW, OD, BASE_H, LID_T))
+    return base, lid, refs
+
+
+if __name__ == "__main__" or App.GuiUp:
+    main()

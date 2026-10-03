@@ -1,0 +1,7 @@
+- ESPHome device: ESP32 DevKit on the rev G carrier board
+- 2x Hydrostatic water level sensors (QDY30A-B, RS-485/Modbus)
+- Hall effect water flow sensor (YF-B1-S, stainless), first after the manual shutoff
+- Adjustable flow restrictor, set to about 2 L/min
+- Stainless 2 way motorised ball valve, 24 V, fail closed
+- Float switch in the upper chamber lid as a hardware interlock
+- RS-485 transceiver (THVD1406 on the board, MAX485 on the breadboard)

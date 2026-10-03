@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Water filter controller — physical layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1F2;
+    --card:#FBFCFC;
+    --ink:#16272F;
+    --ink-soft:#5C6E77;
+    --rule:#CBD5D9;
+    --power:#B23A34;
+    --ground:#55686F;
+    --signal:#2A6E8F;
+    --switched:#A9700F;
+    --water:#3E8FB0;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.6;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:56px 28px 96px}
+  .prose{max-width:64ch}
+  h1{font-size:34px;font-weight:600;margin:0 0 12px;letter-spacing:-0.015em}
+  h2{font-size:22px;font-weight:600;margin:56px 0 8px;letter-spacing:-0.01em}
+  h3{font-size:16px;font-weight:600;margin:0}
+  p{margin:0 0 16px}
+  .lede{font-size:18px;color:var(--ink-soft);margin-bottom:28px}
+  code{font-family:"IBM Plex Mono",monospace;font-size:0.9em}
+
+  .status{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:0 0 44px;list-style:none}
+  .status li{font-size:13px;padding:5px 11px;background:var(--card);border:1px solid var(--rule);border-radius:3px}
+  .status li.open{border-color:var(--switched);color:var(--switched)}
+
+  .figure{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:20px 16px;margin:0 0 12px}
+  .figure svg{display:block;width:100%;height:auto}
+  .caption{font-size:13px;color:var(--ink-soft);margin-bottom:8px}
+
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));margin-top:8px}
+  .stop{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:16px 18px}
+  .stop .num{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-soft);display:block;margin-bottom:6px}
+  .stop h3{margin-bottom:8px}
+  .stop p{font-size:14px;margin-bottom:0;color:var(--ink-soft)}
+
+  .note{border-left:3px solid var(--switched);background:var(--card);padding:14px 18px;margin:24px 0;border-radius:0 4px 4px 0;max-width:64ch}
+  .note p{margin:0}
+  .note p + p{margin-top:10px}
+
+  table{border-collapse:collapse;width:100%;max-width:700px;font-size:14px;margin:8px 0 0}
+  th,td{text-align:left;padding:9px 14px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{font-weight:500;color:var(--ink-soft);font-size:13px}
+
+  footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--rule);font-size:13px;color:var(--ink-soft);max-width:64ch}
+
+  @media (max-width:520px){
+    .wrap{padding:32px 16px 64px}
+    h1{font-size:28px}
+    table{display:block;overflow-x:auto}
+  }
+
+  @media print{
+    body{background:#fff}
+    .wrap{padding:0}
+    .figure,.stop{break-inside:avoid}
+    h2{break-after:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Physical layout</h1>
+<p class="lede prose">Where each part actually sits — the water path, the Berkey chambers, and where the electronics live. Companion to BOM.md (what to buy) and NETLIST.md (how the carrier board is wired).</p>
+
+<ul class="status">
+  <li>Big Berkey, 2 Black Berkey elements (3 planned)</li>
+  <li>Batch-fill strategy — no continuous drip</li>
+  <li>Stainless valve body — owned, interchangeable</li>
+  <li><b>Valve travel 15 s</b> — label; 10 to 11 s on the bench</li>
+  <li><b>Flow sensor first after the shutoff</b>, stays full and primed</li>
+  <li>Manual shutoff — received</li>
+  <li>Electronics — one rev G board, printed box</li>
+  <li>Lower probe route — 18 mm hole in upper chamber base</li>
+  <li>M16 × 1.5 stainless gland, 7 mm probe lead</li>
+  <li>Upper chamber — replacement stainless lid, <b>4 holes</b></li>
+  <li>Upper probe hangs from the lid gland</li>
+  <li>One float switch in the lid — hardware interlock</li>
+  <li class="open">Unrestricted flow rate — estimated, not measured</li>
+  <li class="open">Restrictor inlet end — check on the real part</li>
+  <li class="open">Float stem length — 45 mm or 75 mm, one fitted</li>
+  <li class="open">Lid steel grade — 201 vs 304, accepted unknown</li>
+  <li class="open">Spare hole count — depends on 2 vs 3 elements</li>
+  <li class="open">Backup solenoid — deferred, gland hole ready</li>
+</ul>
+
+<div class="figure">
+<svg viewBox="0 0 900 900" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Physical layout cross-section of the water filter controller</title>
+<desc>A water supply line runs down through a manual shutoff, the flow sensor, an adjustable restrictor and the electric ball valve, then discharges through a drilled inlet hole in the upper chamber's lid, ending above the maximum water line so an air gap is preserved. The flow sensor sits first so it stays full of water at mains pressure between fills. A deferred backup solenoid valve would sit directly after the main valve, wired in parallel with the valve's open winding, so it opens and closes with every fill and drops out when the float trips. The upper chamber is closed by a stainless lid drilled with four holes: two glands passing the upper and lower probe cables, a deliberately loose inlet hole that also vents displaced air, and a threaded hole carrying the single float switch. The upper probe hangs from the lid gland. Water drips passively through the Black Berkey elements, labelled B1 to B3 with the third one planned, into the lower chamber below, which holds the lower level probe whose cable rises through a sealed gland in an 18 mm spare element hole in the upper chamber's base, crosses the upper chamber and leaves through the lid, and has a spigot near its base for dispensing. A single printed electronics box sits off to the side on a shelf above the tank. It holds only the revision G carrier board, with the ESP32, transceiver, buck module, both relays and all fuses and diodes on it, and cables run from it down to the valve, flow sensor, float switch and both probes.</desc>
+
+<defs>
+  <marker id="flow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+
+<!-- Water supply line -->
+<text x="40" y="30" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#5C6E77">Water supply (mains)</text>
+<line x1="80" y1="40" x2="80" y2="90" stroke="#3E8FB0" stroke-width="3"/>
+
+<!-- Manual shutoff -->
+<rect x="55" y="90" width="50" height="30" rx="3" fill="#FBFCFC" stroke="#5C6E77" stroke-width="1"/>
+<text x="130" y="110" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#16272F">Manual shutoff — male/male</text>
+<line x1="80" y1="120" x2="80" y2="150" stroke="#3E8FB0" stroke-width="3"/>
+
+<!-- Flow sensor, first after the shutoff -->
+<rect x="45" y="150" width="70" height="36" rx="4" fill="#F2F7F9" stroke="#2A6E8F" stroke-width="1.5"/>
+<text x="80" y="172" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="500" fill="#16272F">Flow</text>
+<text x="130" y="163" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#16272F">Flow sensor — YF-B1-S stainless, G½</text>
+<text x="130" y="179" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#2A6E8F">always full, at mains pressure, never drains</text>
+<line x1="80" y1="186" x2="80" y2="216" stroke="#3E8FB0" stroke-width="3"/>
+
+<!-- Restrictor -->
+<rect x="55" y="216" width="50" height="26" rx="3" fill="#FBFCFC" stroke="#A9700F" stroke-width="1"/>
+<text x="130" y="229" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#16272F">Adjustable restrictor — male/female</text>
+<text x="130" y="245" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#5C6E77">set to 2 L/min by the flow meter</text>
+<line x1="80" y1="242" x2="80" y2="272" stroke="#3E8FB0" stroke-width="3"/>
+
+<!-- Valve -->
+<rect x="45" y="272" width="70" height="40" rx="4" fill="#FBF6EC" stroke="#A9700F" stroke-width="1.5"/>
+<text x="80" y="296" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="13" font-weight="500" fill="#16272F">Valve</text>
+<text x="130" y="290" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#16272F">Stainless body, 8 Nm actuator, fails closed</text>
+<text x="130" y="306" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#A9700F">15 s travel — see note 1</text>
+
+<!-- Deferred backup solenoid, directly after the main valve -->
+<line x1="115" y1="292" x2="182" y2="292" stroke="#5C6E77" stroke-width="1.5" stroke-dasharray="4,3"/>
+<line x1="182" y1="292" x2="182" y2="318" stroke="#5C6E77" stroke-width="1.5" stroke-dasharray="4,3"/>
+<rect x="150" y="318" width="65" height="40" rx="4" fill="none" stroke="#5C6E77" stroke-width="1.5" stroke-dasharray="4,3"/>
+<text x="182" y="334" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#5C6E77">Backup</text>
+<text x="182" y="348" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#5C6E77">solenoid</text>
+<text x="230" y="332" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#5C6E77">(deferred) right after the valve, on J9</text>
+<text x="230" y="348" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#5C6E77">OPEN/COM, shuts in under a second</text>
+
+<line x1="80" y1="312" x2="80" y2="345" stroke="#3E8FB0" stroke-width="3" marker-end="url(#flow)"/>
+
+<!-- open air discharge -->
+<text x="95" y="372" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#5C6E77" font-style="italic">air gap above max level — hole stays loose</text>
+<line x1="80" y1="345" x2="80" y2="380" stroke="#3E8FB0" stroke-width="2" stroke-dasharray="4,4"/>
+
+<!-- Upper chamber -->
+<rect x="220" y="380" width="360" height="220" rx="8" fill="#F7FBFC" stroke="#16272F" stroke-width="2"/>
+<text x="232" y="405" font-family="IBM Plex Sans,sans-serif" font-size="15" font-weight="600" fill="#16272F">Upper chamber</text>
+<text x="232" y="424" font-family="IBM Plex Mono,monospace" font-size="12" fill="#5C6E77">~7.6 L · Ø21.6 cm</text>
+
+<!-- Black Berkey filter elements: B1, B2 fitted, B3 planned -->
+<rect x="260" y="440" width="26" height="120" rx="6" fill="#E7EEF0" stroke="#5C6E77" stroke-width="1"/>
+<rect x="310" y="440" width="26" height="120" rx="6" fill="#E7EEF0" stroke="#5C6E77" stroke-width="1"/>
+<rect x="360" y="440" width="26" height="120" rx="6" fill="#E7EEF0" stroke="#5C6E77" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="273" y="575" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#5C6E77">B1</text>
+<text x="323" y="575" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#5C6E77">B2</text>
+<text x="373" y="575" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="10" fill="#5C6E77">B3?</text>
+
+<!-- upper probe, hanging from the lid gland -->
+<line x1="450" y1="372" x2="450" y2="470" stroke="#2A6E8F" stroke-width="2"/>
+<circle cx="450" cy="480" r="8" fill="#F2F7F9" stroke="#2A6E8F" stroke-width="1.5"/>
+<text x="464" y="504" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#2A6E8F" font-weight="500">Upper probe</text>
+<text x="464" y="520" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#16272F">hangs from the lid gland</text>
+<text x="464" y="536" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#A9700F">mark the cable, leave slack</text>
+
+<!-- single float switch in the lid, label beside it -->
+<line x1="555" y1="372" x2="555" y2="425" stroke="#B23A34" stroke-width="2"/>
+<rect x="543" y="425" width="24" height="14" rx="3" fill="#FBFCFC" stroke="#B23A34" stroke-width="1.5"/>
+<text x="537" y="436" text-anchor="end" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#B23A34" font-weight="500">Float switch</text>
+<text x="537" y="452" text-anchor="end" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#16272F">NC interlock</text>
+
+<!-- passive drip arrows -->
+<line x1="273" y1="562" x2="273" y2="600" stroke="#3E8FB0" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#flow)"/>
+<line x1="323" y1="562" x2="323" y2="600" stroke="#3E8FB0" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#flow)"/>
+<line x1="373" y1="562" x2="373" y2="600" stroke="#3E8FB0" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#flow)"/>
+<text x="300" y="614" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#5C6E77">B1 to B3 = Black Berkey elements</text>
+<text x="300" y="629" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#5C6E77">drip ~220&#8211;330 mL/min</text>
+
+<!-- Lower chamber -->
+<rect x="220" y="640" width="360" height="220" rx="8" fill="#F7FBFC" stroke="#16272F" stroke-width="2"/>
+<text x="232" y="665" font-family="IBM Plex Sans,sans-serif" font-size="15" font-weight="600" fill="#16272F">Lower chamber</text>
+<text x="232" y="684" font-family="IBM Plex Mono,monospace" font-size="12" fill="#5C6E77">~8.5 L · Ø21.6 cm</text>
+
+<!-- lower probe: cable up through the base gland, across the upper chamber, out through the lid -->
+<line x1="425" y1="372" x2="425" y2="720" stroke="#2A6E8F" stroke-width="2"/>
+<circle cx="425" cy="600" r="4" fill="#2A6E8F"/>
+<circle cx="425" cy="730" r="8" fill="#F2F7F9" stroke="#2A6E8F" stroke-width="1.5"/>
+<text x="480" y="700" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#16272F">Lower probe — out via base and lid</text>
+<text x="480" y="718" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#5C6E77">this port is wet — seal on the upper side</text>
+
+<!-- sight glass -->
+<rect x="240" y="700" width="14" height="100" rx="3" fill="#E7EEF0" stroke="#5C6E77" stroke-width="1"/>
+<text x="260" y="810" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#5C6E77">Sight glass (built in)</text>
+
+<!-- spigot -->
+<rect x="580" y="800" width="50" height="18" rx="3" fill="#FBFCFC" stroke="#5C6E77" stroke-width="1.5"/>
+<text x="640" y="812" font-family="IBM Plex Sans,sans-serif" font-size="13" fill="#16272F">Spigot — manual dispensing</text>
+
+<!-- Electronics enclosure, rev G: one board, nothing else -->
+<rect x="700" y="110" width="180" height="200" rx="6" fill="#16272F" stroke="#16272F" stroke-width="2"/>
+<text x="790" y="136" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="14" font-weight="600" fill="#FBFCFC">Electronics box</text>
+<text x="790" y="152" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#AFC0C7">printed, 154 × 112 × 40</text>
+<text x="790" y="176" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#AFC0C7">carrier PCB rev G:</text>
+<text x="790" y="192" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#AFC0C7">ESP32, THVD1406, buck</text>
+<text x="790" y="208" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#AFC0C7">K1, K2 relays + drivers</text>
+<text x="790" y="224" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="11" fill="#AFC0C7">D1–D4 diodes, F1–F3 fuses</text>
+<text x="790" y="250" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#E8A33D">dry &amp; elevated —</text>
+<text x="790" y="266" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="12" fill="#E8A33D">above max water line</text>
+<text x="790" y="290" text-anchor="middle" font-family="IBM Plex Sans,sans-serif" font-size="11" fill="#AFC0C7">glands top wall, spare on right</text>
+
+<!-- cable runs from box -->
+<path d="M700 150 H640 V168 H600" stroke="#5C6E77" stroke-width="1.2" fill="none" stroke-dasharray="3,3"/>
+<path d="M700 190 H660 V480 H466" stroke="#5C6E77" stroke-width="1.2" fill="none" stroke-dasharray="3,3"/>
+<path d="M700 210 H680 V730 H433" stroke="#5C6E77" stroke-width="1.2" fill="none" stroke-dasharray="3,3"/>
+<path d="M700 230 H690 V432 H567" stroke="#B23A34" stroke-width="1.2" fill="none" stroke-dasharray="3,3"/>
+<path d="M700 290 H640 V266 H115 V272" stroke="#A9700F" stroke-width="1.2" fill="none" stroke-dasharray="3,3"/>
+
+</svg>
+</div>
+<p class="caption">Solid lines = pipe runs. Dashed grey = signal cables to the electronics box. Dashed red = the float switch's interlock cable. Dashed amber = switched valve wiring from the relays on the board (J9). Dashed teal = passive gravity drip. Dashed outline = deferred or planned component (B3, the third Black Berkey element; the backup solenoid). Cable routes are schematic: in the real box every field cable leaves through the top wall, and a future solenoid cable through the spare hole on the right wall.</p>
+
+<h2>The water path, top to bottom</h2>
+<div class="grid">
+  <div class="stop">
+    <span class="num">1</span>
+    <h3>Manual shutoff</h3>
+    <p>A normal ball valve you can close by hand if anything needs to come apart. Received. <b>Male/male.</b> The flow sensor seals on flat faces, so it joins the shutoff through a <b>G½ flat-face union</b>: swivel nut and flat washer on the sensor side, female thread on the shutoff side.</p>
+  </div>
+  <div class="stop">
+    <span class="num">2</span>
+    <h3>Flow sensor</h3>
+    <p>YF-B1-S, stainless, G½. <b>First after the shutoff</b>, so it stays full of water at mains pressure between fills and reads from the first second of a fill. Downstream of the valve it would drain after every fill and start each one with air in the turbine, under-counting until it flooded. Arrow pointing downstream, axis horizontal, a short straight run before it. No PTFE tape on its flat faces.</p>
+  </div>
+  <div class="stop">
+    <span class="num">3</span>
+    <h3>Adjustable restrictor</h3>
+    <p><b>Male/female</b>, joined to the sensor's outlet by a second flat-face union. Tuned once by hand to 2 L/min. Must stay <b>downstream of the sensor</b>: pressure collapses past a restrictor, which is the condition the sensor dislikes. Upstream of the valve it limits the flow through the ball valve while it spends 10 to 15 s partly open, which spares the seat. See "Restricting the flow" below.</p>
+  </div>
+  <div class="stop">
+    <span class="num">4</span>
+    <h3>Electric valve</h3>
+    <p>Stainless body with the 8 Nm 24 V actuator, wired to fail closed. <b>15 s travel</b> on the label, 10 to 11 s on the bench. The body is interchangeable between the two motors on hand, so this closes with a screwdriver rather than a purchase. When closed it holds full mains pressure regardless of the restrictor: a restrictor only drops pressure while water flows. <b>Leave a straight G½ section or a union directly after it</b> for the future solenoid.</p>
+  </div>
+  <div class="stop" style="opacity:0.6;border-style:dashed">
+    <span class="num">4b</span>
+    <h3>Backup solenoid <span style="font-weight:400;color:var(--ink-soft)">(deferred)</span></h3>
+    <p>Directly after the main valve. 24 V DC, normally closed, direct acting (0 bar minimum), 8 W or less. Wired in parallel with the valve's open winding at J9 OPEN and COM, through the spare right-wall gland, so it opens and closes with every fill and shuts in under a second. A float trip drops both relays, so it closes without the ESP32. No PCB change. Spec in BOM.md.</p>
+  </div>
+  <div class="stop">
+    <span class="num">5</span>
+    <h3>Inlet through the lid</h3>
+    <p>Through a drilled hole in the lid, ending <b>above</b> the maximum water line. Deliberately not sealed around the pipe: the same hole vents air displaced during a fill. A lid with only a sealed pipe through it burps water back out.</p>
+  </div>
+  <div class="stop">
+    <span class="num">6</span>
+    <h3>Upper chamber</h3>
+    <p>Holds the Black Berkey elements (B1 and B2 fitted, B3 planned), the upper probe and the single float switch. The lower probe's cable also crosses it on its way from the base gland to the lid. Closed by a drilled stainless lid — see "The upper chamber lid" below. Passively drips into the lower chamber the whole time, independent of the fill valve.</p>
+  </div>
+  <div class="stop">
+    <span class="num">7</span>
+    <h3>Lower chamber</h3>
+    <p>Upper chamber's base covers most of its opening, so the lower probe's cable rises through a sealed M16 gland in an 18 mm spare element hole, crosses the upper chamber and leaves through its own hole in the lid. The base hole is below the upper chamber's waterline and must seal properly. Spare holes only exist with 2 or 3 elements installed, not 4.</p>
+  </div>
+</div>
+
+<div class="note prose">
+  <p><b>Why the flow sensor moved to the front.</b> Bench testing showed the sensor needs pressure behind it to read. In a single series line the flow through it is the same on either side of the valve; what differs is what happens between fills. After the valve, the short run drains into the Berkey and the open outlet gives almost no back pressure, so the turbine starts every fill dry. Before the valve, it never empties.</p>
+  <p><b>The trade-off, accepted.</b> The sensor now carries mains pressure around the clock, outside the motorised valve's protection. It is built for line pressure; the manual shutoff in front covers maintenance; and it strengthens the case for the deferred floor leak sensor.</p>
+  <p><b>A useful side effect.</b> Once the valve has finished closing, any pulses mean the valve is passing, since the sensor is always wet and ready to turn. The firmware's leak check uses exactly that, and skips the valve's closing travel so a normal stop does not trip it.</p>
+</div>
+
+<h2>Mounting the probes</h2>
+<p class="prose">Both probes hang <b>vertically, tip down</b>, with the diaphragm 10 to 15 mm
+above the chamber floor. Not horizontal, and not resting on the bottom.</p>
+<p class="prose">A hydrostatic probe measures the pressure of the water column above its
+diaphragm, so the diaphragm's height <em>is</em> the zero point. Water below it is
+invisible to the sensor, and a few degrees of tilt shifts that zero by centimetres of
+reading. Laid sideways the diaphragm also faces into the flow, where air bubbles cling
+to it. Resting it on the floor is no better: debris collects underneath and the zero
+moves whenever the probe settles.</p>
+<p class="prose">The horizontal-mounting rule that exists on this project belongs to the
+<b>flow sensor</b>, not the probes. Turbine meters need their axis horizontal with a
+straight run ahead of them or the rotor loads unevenly and undercounts at low flow.</p>
+
+<div class="note prose">
+  <p><b>The vent capillary.</b> A thin air tube runs inside the probe's cable jacket,
+  referencing the diaphragm to atmosphere. It must run upward to a dry end. A drooping
+  cable run collects condensation in that tube, which reads as levels drifting downwards
+  over days.</p>
+  <p>It also sets a limit on how hard any gland can be tightened. Crush the capillary
+  and the probe reads barometric drift instead of depth, or stops responding. Tighten
+  until the cable will not slide by hand, then stop, and confirm the reading still
+  tracks a changing water level afterwards.</p>
+</div>
+
+<h3 style="margin:36px 0 8px">Upper chamber — hanging from the lid gland</h3>
+<p class="prose"><b>This reverses an earlier decision.</b> Previous revisions of this
+document mounted the upper probe on a stainless strip clamped under a filter element's
+wingnut. It now hangs from its own lead through the lid's M16 gland, the same way the
+lower probe hangs from the gland in the chamber base.</p>
+<p class="prose">The objection to lid mounting was that the lid comes off and takes the
+probe's zero with it. That objection is weaker than it looked: elements last 2 to 10
+years, the lid otherwise stays on to keep dust out, and a bracket clamped under a
+wingnut moves too whenever an element is changed. What the lid route buys is one less
+fabricated part and one less thing to corrode in the chamber.</p>
+
+<div class="note prose">
+  <p><b>Two mitigations are required, not optional.</b></p>
+  <p><b>Mark the cable</b> with a permanent marker where it enters the gland, so one
+  glance says whether it has moved. <b>Leave coiled slack</b> above the lid so it can be
+  lifted and set aside without dragging the probe up with it.</p>
+  <p>Without both, a lid removal silently invalidates the zero and there is no way to
+  tell afterwards. No software can recalculate the offset on its own — recalibration is
+  two weighed 2 L additions. The one real possibility is cross-checking against the
+  <b>lower</b> probe, which is glanded into the chamber base and genuinely does not
+  move. Worth building once there are real numbers to test it against.</p>
+</div>
+
+<h3 style="margin:36px 0 8px">Lower chamber — through the 18 mm hole</h3>
+<p class="prose"><b>Measured: the spare element hole in the upper chamber's base is
+18 mm.</b> The probe's sensing head is around 40 mm across, so the body cannot pass
+through it under any circumstances. The bulkhead-collar option is dead; a
+<b>cable gland is the only route</b>, and the probe hangs from its own lead.</p>
+
+<div class="note prose">
+  <p><b>This port is wet, not dry.</b> An earlier revision of this document said it
+  sealed only against dust and insects. That was wrong. The upper chamber's base
+  <em>is</em> the lower chamber's lid, so this hole sits below the upper chamber's
+  waterline whenever a fill has just run — which is exactly the state the fill logic
+  creates.</p>
+  <p>Left unsealed it weeps into the lower chamber and bypasses the filter elements
+  entirely, which is worse than a leak. The pressure is trivial, about 0.02 bar at
+  20 cm of depth, so any IP68 gland handles it — but it has to actually be a seal, with
+  the gland body and its flange O-ring on the <b>upper</b> side and the locknut below.
+  Seal on the pressure side.</p>
+</div>
+
+<h3 style="margin:36px 0 8px">The gland, settled</h3>
+<table>
+  <tr><th>Spec</th><th>Value</th><th>Why</th></tr>
+  <tr><td>Thread</td><td>M16 × 1.5</td><td>16 mm thread in an 18 mm hole. M12 would need a washer to span the gap; M20 needs 20.5 mm and will not go in. Do not accept PG13.5 as a substitute — similar size, different thread</td></tr>
+  <tr><td>Cable range</td><td>covers 7 mm</td><td>Measured lead is <b>7 mm</b> OD — mid-range on a typical M16 (5–10 mm), which is where a gland seals with the least torque. Check the variant's own range before ordering</td></tr>
+  <tr><td>Body</td><td>304 stainless</td><td>Sits permanently in drinking water. Same reasoning as the valve</td></tr>
+  <tr><td>Seals</td><td>EPDM</td><td>Both the cable insert and the flange O-ring</td></tr>
+  <tr><td>Extra</td><td>2 × EPDM washer, M16 × 30 × 3 mm</td><td>1 mm of radial play in an 18 mm hole, and Berkey chamber bottoms are often slightly domed. A soft washer either side centres the gland and absorbs any curvature</td></tr>
+</table>
+<p class="caption">Check the seat with a straightedge before assembly. A flange O-ring
+needs a flat annulus around the hole; if the floor is domed there, the washers are doing
+the sealing, not the O-ring.</p>
+
+<h3 style="margin:36px 0 8px">The upper chamber lid</h3>
+<p class="prose">The upper chamber is closed by a <b>replacement stainless lid</b> — a
+22 cm raised pot cover, drilled with <b>four</b> holes: both probe cables, the water inlet
+and the float switch. It replaces the original lid rather than modifying it. Drill all
+four in one setup.</p>
+
+<table>
+  <tr><th>Hole</th><th>Size</th><th>Fitting</th><th>Sealed?</th></tr>
+  <tr>
+    <td>Upper probe cable</td>
+    <td>17 or 18 mm</td>
+    <td>M16 × 1.5 gland, same part as the base port, EPDM washer either side</td>
+    <td><b>Yes</b>, but only against dust and insects — this lid is dry and holds back no
+    pressure. It also carries the probe's weight now</td>
+  </tr>
+  <tr>
+    <td>Lower probe cable</td>
+    <td>17 or 18 mm</td>
+    <td>Third M16 × 1.5 gland, EPDM washer either side</td>
+    <td>Against dust only. Carries no weight, the base gland does that, so snug it lightly
+    and never use it to pull the cable taut</td>
+  </tr>
+  <tr>
+    <td>Water inlet</td>
+    <td>to suit the pipe</td>
+    <td>None — bare drilled hole, pipe passes loosely through</td>
+    <td><b>Deliberately not.</b> The same gap vents air displaced during a fill. Seal it
+    and the chamber burps water back out through whatever gap is left</td>
+  </tr>
+  <tr>
+    <td>Float switch (one)</td>
+    <td>10.5 mm</td>
+    <td>M10 × 1.5 thread, EPDM washer either side — the <b>1.5 mm</b> washers, not the
+    3 mm. The float has its own O-ring and thread engagement is short</td>
+    <td>Incidentally, by its own O-ring. Sealing is not the point here</td>
+  </tr>
+</table>
+
+<div class="note prose">
+  <p><b>Why lid mounting is fine for the float and costly for the probe.</b> The float
+  has <em>no calibration</em>. It trips in a band centimetres wide, so a few millimetres
+  of lid variation is irrelevant. The probe's whole accuracy is its diaphragm height.</p>
+  <p>Mount the float <b>below the maximum fill line and above the normal fill
+  target</b>. If it trips during an ordinary fill, the target is too high. Its 350 mm
+  cable needs an extension — solder and heatshrink, joint sited <b>above</b> the lid,
+  never inside the chamber.</p>
+</div>
+
+<p class="prose">Never route the upper probe's cable <em>down</em> through a second hole
+in the chamber base. That runs the vent capillary downhill into a closed, humid chamber,
+which is precisely the condensation failure described above. Up and out, always.</p>
+
+<h3 style="margin:36px 0 8px">Drilling the lid</h3>
+<p class="prose">A pot lid is thin, roughly 0.4 to 0.6 mm. Use a <b>step drill</b>, not a
+twist bit, which grabs and tears thin stainless. Slow speed, firm pressure, cutting oil,
+and a scrap of wood backing the sheet. Deburr both sides.</p>
+<p class="prose">17 mm is the nominal hole for M16; 18 mm also works and makes both probe
+ports identical, so a spare gland fits either. The gland nut will dimple sheet this thin
+if tightened against bare metal — the EPDM washers either side spread the load and keep
+the cable entering straight.</p>
+<p class="prose">Space the two probe glands at least 40 mm apart, centre to centre, so both
+nuts and washers fit. Place the inlet hole well away from both probe glands, and set the pipe so
+its end stays <b>above the maximum water line</b>. An air gap between supply pipe and
+tank water is worth keeping; a pipe dipping into the chamber is not.</p>
+
+<div class="note prose">
+  <p><b>Accepted unknown: the lid's steel grade.</b> Cheap pot lids are often 201
+  stainless rather than 304. 201 spots and pits in permanently damp service, and the
+  underside of this lid carries condensation all day.</p>
+  <p>Accepted deliberately rather than chased: anything shedding from it lands in the
+  <em>unfiltered</em> upper chamber and passes through the Black Berkey elements
+  afterwards. The lid is cheap and swappable without touching anything else, so the plan
+  is to fit it and replace it if rust appears. <b>Two were bought</b> — once drilled, it
+  is drilled.</p>
+</div>
+
+<p class="prose">If only 2 elements are fitted there is likely a second spare hole in the
+chamber base. Confirm its blanking plug is still in — an open hole passes unfiltered
+water straight through.</p>
+
+<h3 style="margin:36px 0 8px">Assembly order, and why it matters later</h3>
+<p class="prose">The probe head can never pass through the 18 mm hole, so it lives
+permanently inside the lower chamber. Build it in this order: probe placed in the lower
+chamber, lead fed up through the hole from below, gland fitted and tightened from above,
+upper chamber replaced on top.</p>
+<p class="prose">That leaves the cable captive in the gland. Every time the upper chamber
+comes off for cleaning or an element change, either the cable has enough slack to let the
+upper chamber be lifted clear and set aside — <b>30 to 40 cm coiled in the lower
+chamber</b> — or the gland has to be undone, which loses the calibrated zero and means
+repeating the two weighed additions. Buy the slack.</p>
+<p class="prose"><b>The lid is now captive too.</b> The lower probe's cable runs through
+both the base gland and the lid gland, so lifting the lid needs coiled slack <b>above the
+lid</b> on that cable as well as on the upper probe's. Inside the upper chamber leave it
+slightly slack between the two glands, never taut: a taut run pulls on the base gland,
+and that gland sets the lower probe's zero.</p>
+<p class="prose">The head also makes the probe heavier than a bare-cylinder probe, likely
+300 to 500 g. Well within what a gland holds on a 7 mm jacket, but it sharpens the
+capillary rule: the load cannot be taken by tightening harder. Set the height, snug the
+gland, and let the coiled slack absorb any tug on the cable. <b>The same now applies to
+the upper probe</b>, which hangs from the lid gland by its own lead.</p>
+<p class="prose">Clearance inside the lower chamber has been checked and is not a
+constraint. The 40 mm dimension is the sensing head at the bottom; the body above it
+tapers to the cable entry, and the diaphragm sits on the underside of that head — so the
+10 to 15 mm clearance is measured from the head's <em>underside</em>, not from anywhere
+on the body.</p>
+
+<h3 style="margin:36px 0 8px">Materials</h3>
+<p class="prose">Everything wetted or sitting permanently in a chamber: 304 or 316
+stainless, silicone, or EPDM. Not galvanised, not zinc-plated, not aluminium, not
+brass. Same reasoning already applied to the valve — a gland is cheap enough that there
+is no reason to compromise. The probe body itself is stainless, so it raises no question
+of its own.</p>
+
+<h3 style="margin:36px 0 8px">Calibrate after mounting, not before</h3>
+<p class="prose">Once the probe is finally fixed, add a weighed 2 L, note the reading,
+then a second weighed 2 L and note it again. Two points give the offset and confirm the
+366 mL/cm figure below. Any remount invalidates it — including retightening a gland
+that lets the probe slip.</p>
+
+<h2>Restricting the flow</h2>
+<p class="prose">The valve takes <b>15 seconds</b> to travel closed by its label, 10 to 11 s
+on the bench without water pressure. Earlier revisions of this document assumed 5 seconds
+and every overshoot figure in them is wrong by a factor of three. From the moment the
+firmware decides to stop, water keeps arriving for the whole of that travel — and since
+fill volume is bounded by the lower chamber's headroom, that overshoot comes straight out
+of the safety margin. The table uses the label's 15 s, the worse case. A backup solenoid,
+if fitted, would cut it to a few millilitres.</p>
+
+<table>
+  <tr><th>Fill rate</th><th>Overshoot during the 15 s close</th><th>Time to fill 7.6 L</th><th>Probe readings per fill at 10 s interval</th></tr>
+  <tr><td>Unrestricted, ~7.5 L/min <em>estimated</em></td><td><b>~1.9 L</b> (~5.1 cm)</td><td>~60 s</td><td>6</td></tr>
+  <tr><td>5 L/min</td><td>~1.25 L (~3.4 cm)</td><td>~90 s</td><td>9</td></tr>
+  <tr><td>2.5 L/min</td><td>~625 mL (~1.7 cm)</td><td>~3.0 min</td><td>18</td></tr>
+  <tr><td><b>2 L/min, the target</b></td><td><b>~500 mL</b> (~1.4 cm)</td><td>~3.8 min</td><td>23</td></tr>
+</table>
+<p class="caption">Restriction buys margin twice over: less overshoot, and more samples for
+the control loop to act on. <code>safety_margin_cm</code> is set to 3.5.</p>
+
+<div class="note prose">
+  <p><b>The unrestricted figure is an estimate, not a measurement.</b> It was carried
+  over from another scenario. An earlier ~12 L/min assumption gave ~3 L and is
+  superseded.</p>
+  <p>The real rate at the lid could be anywhere from 5 to 12 L/min once the shutoff, the
+  restrictor, the valve, the flow sensor and the fittings have each taken their pressure
+  drop. <b>Measure it during the K-factor session</b> and replace both estimates here.
+  Nothing in the design turns on which one is right: at either rate the overshoot is far
+  too large and the restrictor is mandatory.</p>
+</div>
+
+<h3 style="margin:36px 0 8px">The part</h3>
+<p class="prose">An <b>adjustable restrictor, male/female</b>, is on order. It sits between
+the flow sensor and the valve. The flat-face union on the sensor's outlet takes its far end
+from the restrictor: <b>male</b> if the restrictor's female end is its inlet, female if the
+male end is. Check the restrictor's flow arrow on the real part before buying that union.
+Brass is not acceptable here — this sits upstream of drinking water with nothing between
+it and the filter inlet, exactly the position brass was rejected for on the ball valve.</p>
+<p class="prose">Take <b>1/2"</b> to match the DN15 valve and the YF-B1-S's G½, not a
+smaller body. The needle does the restricting; body size only decides what it threads
+into, and a 1/4" body means two reducers and two more joints that can weep.</p>
+
+<table>
+  <tr><th>Check</th><th>Why</th></tr>
+  <tr><td>Thread standard — BSP, not NPT</td><td>Listings often say BSP and ship NPT. Tapered against parallel weeps</td></tr>
+  <tr><td>Which end is the inlet</td><td>Decides the far end of the second flat-face union</td></tr>
+  <tr><td>Seat and packing material</td><td>PTFE or nylon is fine in drinking water. Generic rubber is less ideal, though a small wetted area sitting upstream of the elements — lid-grade concern, not brass-grade</td></tr>
+</table>
+
+<h3 style="margin:36px 0 8px">Setting it</h3>
+<p class="prose">Install, open the supply, watch litres per minute in Home Assistant, turn
+the handle until the rate is right. The flow sensor makes this a two-minute job instead of
+guesswork, and the same run doubles as the K-factor calibration against a kitchen
+scale.</p>
+<p class="prose"><b>Calibrate the K-factor at the rate you will run, not at full bore.</b>
+The YF-B1-S's ±3 % band runs from 2 to 6 L/min, so 2 L/min sits right on its lower edge,
+where turbine meters get least linear. If the three calibration runs scatter more than a
+few percent, set the restrictor to 2.5 L/min instead: inside the band, for about 125 mL
+more overshoot, still well within the 3.5 cm margin.</p>
+<p class="prose"><b>Record the handle position</b> and check it occasionally. It is the
+kind of setting that gets knocked and nobody notices. <b>Do not run a fill unrestricted
+even once.</b></p>
+
+<h3 style="margin:36px 0 8px">Two alternatives considered</h3>
+<p class="prose"><b>Throttling with the manual shutoff instead.</b> Free, and viable as a
+stopgap. But a ball valve does almost all its flow change in the last 10 to 15 degrees of
+travel, so the setting is twitchy and easy to knock past; throttling erodes the seat over
+time, drifting the valve toward not sealing when it matters; and if the shutoff is also
+the throttle, closing it for maintenance means retuning afterwards.</p>
+<p class="prose"><b>Partially opening the main valve.</b> Rejected, and it is worth
+recording why, because it looks attractive. The relay's <code>NC</code> contact feeds the
+valve's <em>close</em> wire, so de-energising mid-travel does not stop the actuator — it
+reverses it. Holding a partial position needs a second relay interrupting
+<code>COM</code>, and with <code>COM</code> open an unpowered system leaves the valve
+wherever it happened to be, including half open. The actuator has no spring return. That
+trades the fail-closed property, the single most important decision in the build, for a
+flow rate a cheap part already provides. Open-loop timing on an actuator with no position
+feedback, whose speed varies with supply voltage and water torque, would also drift.</p>
+
+<h2>Where the electronics sit</h2>
+<p class="prose">Above the tank, on a shelf or bracket, never below it. Cables run down to
+the valve, flow sensor, float switch and both probes; nothing electrical sits anywhere
+water could reach it even in a worst-case overflow. A short drip loop in each cable — a
+low point before it reaches the box — is cheap insurance: any water that tracks down the
+cable drips off at the low point instead of running into the enclosure.</p>
+<p class="prose"><b>One board, nothing else in the box (revision G).</b> The carrier board
+carries the ESP32, the THVD1406 transceiver, the buck module, both relays with their MOSFET
+drivers, all four flyback diodes and the three PTC fuses. There is no relay module, diode
+carrier or distribution block any more, and no junction anywhere but on the board. The
+flyback diodes satisfy the "at the relay's own terminals" rule by sitting next to K1, K2
+and J9.</p>
+<table>
+  <tr><th>Item</th><th>Detail</th></tr>
+  <tr><td><b>Enclosure</b></td><td>Printed from <code>claude/BerkeyEnclosure.FCMacro</code>, 154 × 112 × 40 mm plus a 3 mm lid. PETG or ASA. Four mounting ears</td></tr>
+  <tr><td><b>Top wall</b></td><td>J2 and J3 probes on M16 glands; J4 flow, J5 float and J9 valve on M12 glands. Metric thread, not PG</td></tr>
+  <tr><td><b>Right wall</b></td><td>DC2 barrel jack behind a printed plug tube, the only power entry. Costs the box its seal, accepted: splash resistant, above the tanks, dry room. Plus <b>one spare M12 hole level with J9</b>, blanking plug fitted, for the future solenoid cable. It is here because the top wall has no room left</td></tr>
+  <tr><td><b>Valve lead</b></td><td>Measure its OD. Over 6 mm it needs an M16 gland and a changed hole in the macro</td></tr>
+</table>
+
+<h2>Notes</h2>
+<table>
+  <tr><td>1</td><td>De-energised relay state drives the valve's close wire. That is a property of the wiring, not the firmware. Getting <code>NO</code>/<code>NC</code> backwards passes every test you can run and leaves the valve open on every failure.</td></tr>
+  <tr><td>2</td><td>Passive drip rate scales roughly with element count: ~220 mL/min at 2 elements, ~330 mL/min at 3, ~440 mL/min at 4 — always far slower than the ~2 L/min fill rate.</td></tr>
+  <tr><td>3</td><td>Chamber diameter (21.6 cm) gives roughly 366 mL per cm of depth in either chamber — the conversion for turning a probe reading into litres once calibrated.</td></tr>
+  <tr><td>4</td><td>Probe diaphragm clearance of 10 to 15 mm means the bottom 10 to 15 mm of each chamber reads as zero — about 4 to 5 cL, and below the spigot on the lower chamber anyway. Not worth chasing by mounting lower.</td></tr>
+  <tr><td>5</td><td>0.2% F.S. on a 0–1 m probe is ±2 mm anywhere in the range, so a chamber only 25 cm deep costs nothing in accuracy. The dominant error is the diaphragm's mounting height, which is why it has to be rigid.</td></tr>
+  <tr><td>6</td><td>The float switch is the only stop outside the firmware, and there is exactly one. On the rev G board its NC contact is the coil supply for both relays (J5, <code>FLOAT_OUT</code>), so lifting it drops K1 and K2 whatever the ESP32 is doing, and K1 falls back to the contact feeding the valve's close wire. A future solenoid on J9 OPEN loses power at the same moment. See HANDOVER.md, "The float interlock".</td></tr>
+</table>
+
+<footer>
+  Companion to BOM.md (what to buy), NETLIST.md (the carrier board, net by net) and
+  HANDOVER.md (project state and the fill logic). This document is the physical and
+  plumbing picture — where things sit, not how they are wired.
+  <br><br>
+  Corrected in this revision (3 Oct 2026, late evening): lid holes three to four. The
+  lower probe's cable crosses the upper chamber and leaves through its own lid gland;
+  drawing, lid table, spacing and slack notes updated.
+  <br><br>
+  Earlier the same evening: drawing labels fixed. B1 to B3 now
+  identified as Black Berkey elements (B3 planned). The float switch label sits beside the
+  float instead of under the upper probe's label, which made it read as part of the probe.
+  Stated throughout that there is a single float switch.
+  <br><br>
+  Earlier on 3 Oct 2026: water path reordered to shutoff, flow sensor,
+  restrictor, valve, so the sensor stays full and pressurised between fills; flow sensor
+  now the stainless YF-B1-S; flat-face unions either side of the sensor; restrictor
+  gender rationale and the claim that it keeps the closed valve off full line pressure
+  corrected; manual shutoff marked received; K-factor note uses the sensor's 2 to 6 L/min
+  band; electronics section and drawing brought to revision G (one board, printed box,
+  no relay module, diode carrier or distribution block); backup solenoid redesigned to
+  sit directly after the valve on J9 OPEN/COM, with a spare right-wall gland hole.
+  <br><br>
+  Previous revision: valve travel 5 s to 15 s; unrestricted flow 12 L/min to
+  ~7.5 L/min estimated, with all overshoot figures recalculated; upper probe moved from a
+  filter-stem bracket to the lid gland; lid holes two to three; float switch from deferred
+  to fitted; valve body from "stainless pending" to owned and interchangeable; restrictor
+  from a needle valve to buy to the adjustable male/female part on order.
+</footer>
+
+</div>
+</body>
+</html>

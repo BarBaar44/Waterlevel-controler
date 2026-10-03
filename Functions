@@ -1,0 +1,5 @@
+Measure the current waterlevel in two tanks (approx 7L each). Tanks are on top of each other and form a waterfilter together.
+
+When the lower tank is (most) empty, the upper tank must be filled with water. For that, the valve must open, to allow the water to flow. After a certain amount of time, or after a certain amount of water, the valve must close again.
+
+All must be controlled by one or more ESPHome ESP32 (or similar) devices

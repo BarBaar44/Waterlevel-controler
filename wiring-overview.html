@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wiring Overview, rev G</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBFCFC; --fg:#16272F; --mut:#5C6E77; --line:#C9D3D8; --panel:#F2F6F8; --board:#E6F0EA;
+  --power:#B23A34; --five:#C2671F; --gnd:#16272F; --sig:#2A6E8F; --sw:#A9700F; --close:#2E7D4F;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#11191D; --fg:#E4ECEF; --mut:#9AAAB2; --line:#34444C; --panel:#18242A; --board:#1B2A22;
+    --power:#E0706A; --five:#E89A5A; --gnd:#C9D5DA; --sig:#6FB3D2; --sw:#E0A64A; --close:#6CC28E;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#11191D; --fg:#E4ECEF; --mut:#9AAAB2; --line:#34444C; --panel:#18242A; --board:#1B2A22;
+  --power:#E0706A; --five:#E89A5A; --gnd:#C9D5DA; --sig:#6FB3D2; --sw:#E0A64A; --close:#6CC28E;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.5}
+main{max-width:1080px;margin:0 auto;padding:24px 16px 64px}
+h1{font-size:26px;margin:0 0 4px}
+h2{font-size:19px;margin:40px 0 8px}
+h3{font-size:16px;margin:24px 0 4px}
+p{max-width:72ch}
+.sub{color:var(--mut);margin:0 0 20px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+.fig svg{display:block;width:100%;min-width:720px;height:auto}
+.note{border-left:3px solid var(--sw);padding:6px 12px;background:var(--panel);margin:16px 0;max-width:80ch}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:15px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+th{font-weight:600;color:var(--mut)}
+code{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:14px;color:var(--mut);margin:10px 0 0;padding:0;list-style:none}
+.legend span{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:6px}
+svg text{font-family:"IBM Plex Sans",sans-serif;fill:var(--fg)}
+svg .m{fill:var(--mut)}
+svg .mono{font-family:"IBM Plex Mono",monospace}
+svg .box{fill:var(--bg);stroke:var(--fg);stroke-width:1.5}
+svg .brd{fill:var(--board);stroke:var(--close);stroke-width:1.5}
+svg .ext{fill:var(--bg);stroke:var(--mut);stroke-width:1.2}
+svg .blk{fill:var(--bg);stroke:var(--line);stroke-width:1.2}
+svg .w{fill:none;stroke-width:2}
+svg .pw{stroke:var(--power)} svg .fv{stroke:var(--five)} svg .gd{stroke:var(--gnd)} svg .sg{stroke:var(--sig)} svg .sw{stroke:var(--sw)} svg .cl{stroke:var(--close)}
+</style>
+</head>
+<body>
+<main>
+<h1>Wiring overview, revision G</h1>
+<p class="sub">Every connection in the build, as ordered on 2 Oct 2026. Pin-level detail lives in <code>claude/NETLIST.md</code>.</p>
+
+<div class="note"><b>Revision G in one line:</b> the board is the only thing in the box. Both relays, their MOSFET drivers, all four flyback diodes and every fuse are on it. Five field cables enter through the top wall, power plugs in on the right. Nothing is wired inside the box.</div>
+
+<h2>1. Where every cable goes</h2>
+<p>Glands sit straight above their terminals, so every cable runs short and vertical. Terminal positions are the real board X values.</p>
+<div class="fig">
+<svg viewBox="0 0 1080 560" role="img" aria-labelledby="t1 d1">
+<title id="t1">Physical cable routing, rev G</title>
+<desc id="d1">The printed enclosure holds only the 130 by 80 mm carrier board. Upper probe, lower probe, flow sensor, float switch and valve each enter the top wall through a gland directly above J2, J3, J4, J5 and J9. The 24 V brick plugs into DC2 on the right edge through a printed tube.</desc>
+
+<rect class="box" x="155" y="120" width="770" height="400" rx="10"/>
+<text x="169" y="508" font-size="13" class="m">Printed enclosure, 154 × 112 mm, all glands on the top wall</text>
+
+<!-- external devices -->
+<rect class="ext" x="268" y="20" width="92" height="44" rx="6"/><text x="314" y="40" text-anchor="middle" font-size="12">Upper probe</text><text x="314" y="55" text-anchor="middle" font-size="11" class="m">addr 1</text>
+<rect class="ext" x="384" y="20" width="92" height="44" rx="6"/><text x="430" y="40" text-anchor="middle" font-size="12">Lower probe</text><text x="430" y="55" text-anchor="middle" font-size="11" class="m">addr 2</text>
+<rect class="ext" x="490" y="20" width="86" height="44" rx="6"/><text x="533" y="40" text-anchor="middle" font-size="12">Flow</text><text x="533" y="55" text-anchor="middle" font-size="11" class="m">YF-B1-S</text>
+<rect class="ext" x="586" y="20" width="80" height="44" rx="6"/><text x="626" y="40" text-anchor="middle" font-size="12">Float</text><text x="626" y="55" text-anchor="middle" font-size="11" class="m">NC</text>
+<rect class="ext" x="732" y="20" width="102" height="44" rx="6"/><text x="783" y="40" text-anchor="middle" font-size="12">Valve motor</text><text x="783" y="55" text-anchor="middle" font-size="11" class="m">BL BR SR</text>
+<rect class="ext" x="960" y="390" width="100" height="40" rx="6"/><text x="1010" y="415" text-anchor="middle" font-size="13">PSU 24 V</text>
+
+<!-- glands -->
+<g fill="var(--mut)">
+  <rect x="303" y="114" width="22" height="12" rx="2"/>
+  <rect x="419" y="114" width="22" height="12" rx="2"/>
+  <rect x="525" y="114" width="16" height="12" rx="2"/>
+  <rect x="618" y="114" width="16" height="12" rx="2"/>
+  <rect x="775" y="114" width="16" height="12" rx="2"/>
+</g>
+<g font-size="10" class="m" text-anchor="middle">
+  <text x="342" y="124">M16</text><text x="458" y="124">M16</text><text x="557" y="124">M12</text><text x="650" y="124">M12</text><text x="807" y="124">M12</text>
+</g>
+<rect x="865" y="398" width="60" height="22" rx="3" fill="none" stroke="var(--mut)" stroke-width="1.5"/>
+<text x="895" y="440" font-size="11" class="m" text-anchor="middle">plug tube</text>
+
+<!-- cables -->
+<path class="w sg" d="M314 64 V170"/>
+<path class="w sg" d="M430 64 V170"/>
+<path class="w sg" d="M533 64 V170"/>
+<path class="w fv" d="M626 64 V170"/>
+<path class="w cl" d="M783 64 V170"/>
+<path class="w pw" d="M960 410 H865"/>
+
+<!-- board -->
+<rect class="brd" x="215" y="170" width="650" height="300" rx="4"/>
+<text x="230" y="462" font-size="12" class="m">Carrier board rev G, 130 × 80 mm</text>
+
+<!-- terminals -->
+<g fill="var(--fg)">
+  <rect x="294" y="170" width="40" height="16"/>
+  <rect x="410" y="170" width="40" height="16"/>
+  <rect x="518" y="170" width="30" height="16"/>
+  <rect x="614" y="170" width="24" height="16"/>
+  <rect x="768" y="170" width="30" height="16"/>
+  <rect x="842" y="396" width="23" height="26"/>
+</g>
+<g font-size="12" class="mono" text-anchor="middle">
+  <text x="314" y="202">J2</text><text x="430" y="202">J3</text><text x="533" y="202">J4</text><text x="626" y="202">J5</text><text x="783" y="202">J9</text>
+</g>
+<text x="836" y="414" font-size="12" class="mono" text-anchor="end">DC2</text>
+
+<!-- blocks -->
+<rect class="blk" x="262" y="297" width="134" height="143" rx="4"/>
+<text x="329" y="365" text-anchor="middle" font-size="14">ESP32</text>
+<text x="329" y="383" text-anchor="middle" font-size="11" class="m">U1, U4 sockets</text>
+<rect class="blk" x="420" y="225" width="105" height="44" rx="4"/>
+<text x="472" y="244" text-anchor="middle" font-size="12">RS-485</text>
+<text x="472" y="260" text-anchor="middle" font-size="10" class="m">U2 THVD1406</text>
+<rect class="blk" x="420" y="346" width="215" height="78" rx="4"/>
+<text x="527" y="382" text-anchor="middle" font-size="12">U3 buck, 24 → 5 V</text>
+<text x="527" y="398" text-anchor="middle" font-size="10" class="m">LM2596 in socket</text>
+<rect class="blk" x="650" y="225" width="70" height="132" rx="4"/>
+<text x="685" y="282" text-anchor="middle" font-size="11">Q1 Q2</text>
+<text x="685" y="298" text-anchor="middle" font-size="10" class="m">drivers</text>
+<rect class="blk" x="735" y="225" width="95" height="60" rx="4"/>
+<text x="782" y="252" text-anchor="middle" font-size="12">K2 OPEN</text>
+<text x="782" y="268" text-anchor="middle" font-size="10" class="m">5 V coil</text>
+<rect class="blk" x="735" y="297" width="95" height="60" rx="4"/>
+<text x="782" y="324" text-anchor="middle" font-size="12">K1 CLOSE</text>
+<text x="782" y="340" text-anchor="middle" font-size="10" class="m">5 V coil</text>
+<rect class="blk" x="735" y="380" width="80" height="40" rx="4"/>
+<text x="775" y="404" text-anchor="middle" font-size="11">F1 F2 F3</text>
+<text x="700" y="210" text-anchor="middle" font-size="10" class="m">D1 D2 at J9</text>
+</svg>
+<ul class="legend">
+  <li><span style="background:var(--sig)"></span>Signal and sensor cables</li>
+  <li><span style="background:var(--five)"></span>Float loop, 5 V</li>
+  <li><span style="background:var(--close)"></span>Valve cable</li>
+  <li><span style="background:var(--power)"></span>24 V in</li>
+</ul>
+</div>
+
+<h2>2. How the valve circuit works</h2>
+<p>Shown at rest, both coils off. K1 sits on NC, so 24 V drives the close wire. Opening needs both relays on. All of it is copper on the board.</p>
+<div class="fig">
+<svg viewBox="0 0 1080 470" role="img" aria-labelledby="t2 d2">
+<title id="t2">Valve drive and float interlock, rev G</title>
+<desc id="d2">Left: DC2 feeds F2, then F3, then K1 COM. K1 NC goes to J9 CLOSE, K1 NO to K2 COM, K2 NO to J9 OPEN. J9 COM is ground. D1 and D2 sit across the windings with anodes to ground. Right: 5 V goes out on J5.1 through the float NC contact and back on J5.2 as FLOAT_OUT, which feeds both relay coils. Each coil returns through its MOSFET to ground. GPIO25 and GPIO26 drive the gates through 680 ohm resistors, with 10k pull-downs.</desc>
+
+<!-- 24 V chain -->
+<text x="30" y="40" font-size="13">DC2</text>
+<path class="w pw" d="M62 36 H90"/>
+<rect class="ext" x="90" y="24" width="44" height="24" rx="3"/><text x="112" y="41" text-anchor="middle" font-size="11" class="mono">F2</text>
+<path class="w pw" d="M134 36 H170"/>
+<rect class="ext" x="170" y="24" width="44" height="24" rx="3"/><text x="192" y="41" text-anchor="middle" font-size="11" class="mono">F3</text>
+<path class="w pw" d="M214 36 H260 V100"/>
+<text x="140" y="70" font-size="11" class="m">1.1 A main, 0.5 A valve</text>
+<text x="268" y="62" font-size="11" class="m mono">RELAY_24V</text>
+
+<!-- K1 contacts -->
+<circle cx="260" cy="100" r="4" fill="var(--fg)"/>
+<path class="w sw" d="M260 100 L232 158"/>
+<circle cx="230" cy="165" r="4" fill="none" stroke="var(--fg)" stroke-width="1.5"/>
+<circle cx="290" cy="165" r="4" fill="none" stroke="var(--fg)" stroke-width="1.5"/>
+<text x="180" y="108" font-size="14" font-weight="600">K1</text>
+<text x="270" y="96" font-size="11" class="m">COM</text>
+<text x="206" y="184" font-size="11" class="m">NC</text>
+<text x="298" y="184" font-size="11" class="m">NO</text>
+
+<!-- K1 NO to K2 COM -->
+<path class="w sw" d="M290 169 V195 H470 V120"/>
+<circle cx="470" cy="120" r="4" fill="var(--fg)"/>
+<path class="w sw" d="M470 120 L442 178"/>
+<circle cx="440" cy="185" r="4" fill="none" stroke="var(--fg)" stroke-width="1.5"/>
+<circle cx="500" cy="185" r="4" fill="none" stroke="var(--fg)" stroke-width="1.5"/>
+<text x="490" y="112" font-size="14" font-weight="600">K2</text>
+<text x="416" y="204" font-size="11" class="m">NC</text>
+<text x="508" y="204" font-size="11" class="m">NO</text>
+<text x="400" y="226" font-size="11" class="m">no connect</text>
+
+<!-- to J9 -->
+<path class="w cl" d="M500 189 V240 H700"/>
+<path class="w cl" d="M230 169 V300 H700"/>
+<rect class="ext" x="700" y="215" width="130" height="110" rx="6"/>
+<text x="765" y="210" text-anchor="middle" font-size="12" class="mono">J9 to valve</text>
+<text x="710" y="244" font-size="11" class="mono">OPEN  BL blue</text>
+<text x="710" y="304" font-size="11" class="mono">CLOSE BR brown</text>
+<text x="710" y="274" font-size="11" class="mono">COM   SR yellow</text>
+<path class="w gd" d="M700 270 H675 V400"/>
+
+<!-- diodes -->
+<circle cx="620" cy="240" r="3.5" fill="var(--fg)"/>
+<path class="w gd" d="M620 240 V345"/>
+<polygon points="612,358 628,358 620,345" fill="var(--fg)"/>
+<path class="w gd" d="M612 345 H628"/>
+<path class="w gd" d="M620 358 V400"/>
+<text x="632" y="358" font-size="11">D1</text>
+<circle cx="580" cy="300" r="3.5" fill="var(--fg)"/>
+<path class="w gd" d="M580 300 V345"/>
+<polygon points="572,358 588,358 580,345" fill="var(--fg)"/>
+<path class="w gd" d="M572 345 H588"/>
+<path class="w gd" d="M580 358 V400"/>
+<text x="560" y="358" font-size="11" text-anchor="end">D2</text>
+<path class="w gd" d="M60 400 H675"/>
+<circle cx="580" cy="400" r="3.5" fill="var(--fg)"/>
+<circle cx="620" cy="400" r="3.5" fill="var(--fg)"/>
+<circle cx="675" cy="400" r="3.5" fill="var(--fg)"/>
+<text x="60" y="422" font-size="13">GND (bottom pour)</text>
+<text x="300" y="440" font-size="11" class="m">Anodes to GND, cathode bands to OPEN and CLOSE: valve common is on the negative rail</text>
+
+<!-- coil panel -->
+<rect x="860" y="20" width="205" height="430" rx="8" fill="var(--bg)" stroke="var(--line)"/>
+<text x="962" y="44" text-anchor="middle" font-size="14" font-weight="600">Coil side</text>
+<text x="962" y="72" text-anchor="middle" font-size="12">+5 V, J5.1</text>
+<path class="w fv" d="M962 80 V100"/>
+<rect class="ext" x="912" y="100" width="100" height="34" rx="4"/>
+<text x="962" y="122" text-anchor="middle" font-size="12">Float, NC</text>
+<path class="w fv" d="M962 134 V164"/>
+<text x="970" y="154" font-size="10" class="m mono">FLOAT_OUT, J5.2</text>
+<path class="w fv" d="M912 164 H1012"/>
+<path class="w fv" d="M912 164 V184"/><path class="w fv" d="M1012 164 V184"/>
+<rect class="ext" x="884" y="184" width="56" height="30" rx="3"/><text x="912" y="204" text-anchor="middle" font-size="11">K1 coil</text>
+<rect class="ext" x="984" y="184" width="56" height="30" rx="3"/><text x="1012" y="204" text-anchor="middle" font-size="11">K2 coil</text>
+<path class="w gd" d="M912 214 V240"/><path class="w gd" d="M1012 214 V240"/>
+<rect class="ext" x="884" y="240" width="56" height="30" rx="3"/><text x="912" y="260" text-anchor="middle" font-size="11">Q1</text>
+<rect class="ext" x="984" y="240" width="56" height="30" rx="3"/><text x="1012" y="260" text-anchor="middle" font-size="11">Q2</text>
+<path class="w gd" d="M912 270 V290"/><path class="w gd" d="M1012 270 V290"/>
+<text x="962" y="298" text-anchor="middle" font-size="11">GND</text>
+<text x="912" y="316" text-anchor="middle" font-size="10" class="m">GPIO25</text>
+<text x="1012" y="316" text-anchor="middle" font-size="10" class="m">GPIO26</text>
+<text x="962" y="334" text-anchor="middle" font-size="10" class="m">680 Ω gate, 10 k pull-down</text>
+<text x="962" y="350" text-anchor="middle" font-size="10" class="m">D3, D4 across each coil</text>
+<text x="962" y="378" text-anchor="middle" font-size="11" class="m">Water lifts float: contact opens,</text>
+<text x="962" y="394" text-anchor="middle" font-size="11" class="m">both coils drop, K1 falls to NC,</text>
+<text x="962" y="410" text-anchor="middle" font-size="11" class="m">valve driven closed.</text>
+<text x="962" y="426" text-anchor="middle" font-size="11" class="m">No firmware, works without ESP32.</text>
+</svg>
+<ul class="legend">
+  <li><span style="background:var(--power)"></span>24 V feed</li>
+  <li><span style="background:var(--sw)"></span>Switched path</li>
+  <li><span style="background:var(--close)"></span>To the valve</li>
+  <li><span style="background:var(--five)"></span>Float loop and coil supply</li>
+  <li><span style="background:var(--gnd)"></span>Ground and diodes</li>
+  <li>Dot = joined. Crossing without a dot = not connected</li>
+</ul>
+</div>
+
+<h2>3. Every connection, as a list</h2>
+
+<h3>Into and out of the box</h3>
+<div class="wrap"><table>
+<tr><th>Terminal</th><th>Device</th><th>Pin order on the terminal</th><th>Gland</th></tr>
+<tr><td>DC2</td><td>24 V brick, fixed cable</td><td>barrel 5.5 × 2.1, centre positive</td><td>plug tube, right wall</td></tr>
+<tr><td>J2</td><td>Upper probe, address 1</td><td>1 red 24 V, 2 green GND, 3 blue A, 4 yellow B</td><td>M16, top</td></tr>
+<tr><td>J3</td><td>Lower probe, address 2</td><td>same as J2</td><td>M16, top</td></tr>
+<tr><td>J4</td><td>Flow sensor YF-B1-S</td><td>1 red supply, 2 black GND, 3 yellow signal</td><td>M12, top</td></tr>
+<tr><td>J5</td><td>Float switch, NC</td><td>1 +5 V, 2 <code>FLOAT_OUT</code></td><td>M12, top</td></tr>
+<tr><td>J9</td><td>Valve motor</td><td>1 OPEN BL blue, 2 CLOSE BR brown, 3 COM SR yellow. Silkscreen reads COM CLOSE OPEN left to right</td><td>M12, top</td></tr>
+</table></div>
+
+<h3>Inside the box</h3>
+<p>Nothing. Every junction is on the board.</p>
+
+<h3>Assembly settings</h3>
+<div class="wrap"><table>
+<tr><th>Item</th><th>Setting</th><th>Why</th></tr>
+<tr><td>SB2 jumper cap</td><td>pins 1 to 2, 5 V</td><td>Flow sensor runs at 5 V</td></tr>
+<tr><td>R6, R7</td><td>10 kΩ, 20 kΩ</td><td>Divides the 5 V pulses to 3.3 V for GPIO27</td></tr>
+<tr><td>R10</td><td>not fitted</td><td>Sensor has its own pull-up</td></tr>
+<tr><td>D1 to D4</td><td>1N4007, band as on the silkscreen</td><td>Backwards on D1/D2 shorts 24 V the moment a relay closes; F3 trips</td></tr>
+</table></div>
+
+<h2>4. Still to confirm</h2>
+<div class="wrap"><table>
+<tr><th>Item</th><th>When</th></tr>
+<tr><td>Flow K factor at 2 L/min (start value 990)</td><td>Bench, while the boards are on the way</td></tr>
+<tr><td>Valve travel and current with the stainless body, under pressure</td><td>Once plumbed</td></tr>
+<tr><td>DC2 footprint: plug centre beeps to the rear lug</td><td>Boards arrived</td></tr>
+<tr><td>Relays click from GPIO25/26, stay off through a reboot, drop when the float lifts</td><td>First power-up, valve disconnected</td></tr>
+</table></div>
+</main>
+</body>
+</html>
