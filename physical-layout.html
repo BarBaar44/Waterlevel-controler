@@ -96,7 +96,7 @@
   <li class="open">Float stem length — 45 mm or 75 mm, one fitted</li>
   <li class="open">Lid steel grade — 201 vs 304, accepted unknown</li>
   <li class="open">Spare hole count — depends on 2 vs 3 elements</li>
-  <li class="open">Backup solenoid — deferred, gland hole ready</li>
+  <li class="open">Backup solenoid — bought 9 Oct, fitted in v2, gland hole ready</li>
 </ul>
 
 <div class="figure">
@@ -253,8 +253,8 @@
   </div>
   <div class="stop" style="opacity:0.6;border-style:dashed">
     <span class="num">4b</span>
-    <h3>Backup solenoid <span style="font-weight:400;color:var(--ink-soft)">(deferred)</span></h3>
-    <p>Directly after the main valve. 24 V DC, normally closed, direct acting (0 bar minimum), 8 W or less. Wired in parallel with the valve's open winding at J9 OPEN and COM, through the spare right-wall gland, so it opens and closes with every fill and shuts in under a second. A float trip drops both relays, so it closes without the ESP32. No PCB change. Spec in BOM.md.</p>
+    <h3>Backup solenoid <span style="font-weight:400;color:var(--ink-soft)">(bought 9 Oct, fitted in v2)</span></h3>
+    <p>Directly after the main valve, position reviewed and kept 9 Oct: at rest the ball valve holds mains pressure and the solenoid sees none. Stainless, ½", 24 V DC, normally closed, NBR. Measure its coil current on arrival: over 0.45 A, F3 becomes the 1.1 A part. Wired in parallel with the valve's open winding at J9 OPEN and COM, through the spare right-wall gland, so it opens and closes with every fill and shuts in under a second. A float trip drops both relays, so it closes without the ESP32. No PCB change. Spec in BOM.md.</p>
   </div>
   <div class="stop">
     <span class="num">5</span>

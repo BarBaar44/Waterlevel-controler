@@ -202,7 +202,7 @@ Condensed from `HANDOVER.md`, in case any of it saves you an evening.
 
 Deliberately deferred to a version 2: a floor leak sensor, and a backup
 solenoid valve directly after the motorised valve, switched together with its
-open winding.
+open winding. The solenoid itself was bought on 9 Oct 2026.
 
 ---
 

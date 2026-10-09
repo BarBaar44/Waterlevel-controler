@@ -13,7 +13,8 @@ Updated 2 Oct 2026: **PCB and LCSC parts ordered.** Revision G
 sensor first after the shutoff**; plumbing fittings follow from that.
 Spare enclosure gland for a future backup solenoid. **Upper chamber lid
 now has four holes, so three stainless M16 tank glands are needed, not
-two.** Changes recorded at the bottom.
+two.** Updated 9 Oct 2026: **backup solenoid ordered** (version 2
+part, bought early). Changes recorded at the bottom.
 
 ---
 
@@ -333,12 +334,55 @@ stays after it: pressure collapses past a restrictor. See
 
 ---
 
-## Deferred: backup solenoid (version 2, not ordered)
+## Backup solenoid (version 2, ordered 9 Oct)
+
+**Ordered 9 Oct 2026:** AliExpress stainless NC solenoid, "2W series",
+½" (DN15), **DC24V, NBR seal**, about €25.59. Viton rejected: it only
+pays off with hot water, oils or chlorine, and Dutch tap water is cold
+and normally unchlorinated. Neither seal is drinking water certified on
+this listing, so the extra €3 bought nothing.
 
 Directly after the motorised valve, before the lid inlet. Wired **in
 parallel with the valve's open winding**: its two wires land in J9 OPEN
 and J9 COM with twin ferrules, entering through the spare right-wall
 gland. No PCB change.
+
+**How it behaves with that wiring.** The firmware holds both relays on
+for the whole fill. On a stop, K1 drops at once, OPEN loses power and
+the solenoid snaps shut in under a second, while the ball valve still
+takes 10 to 15 s to close. So **the solenoid stops the flow every fill
+and the ball valve closes dry behind it**. Overshoot falls from about
+500 mL to a few millilitres. Keep `safety_margin_cm` at 3.5 anyway.
+
+**Position reviewed 9 Oct, kept after the ball valve:**
+
+- At rest the ball valve, the proven seal, holds mains pressure; the
+  solenoid sees none. Before the ball valve, the solenoid's diaphragm
+  would hold full pressure 24/7 and the ball valve would sit unstressed,
+  which is backwards.
+- Water between the two valves is trapped at whatever pressure remains;
+  harmless.
+- The flow sensor stays upstream of both and pressurised, unchanged.
+- The plumbing slot (straight G½ or union after the valve) and the
+  spare gland are already reserved.
+
+**Accepted trade-off:** with two valves in series, the leak check only
+sees a leak when **both** pass. A passing ball valve is hidden by a good
+solenoid and vice versa. Once a year, lift the solenoid's ferrule from
+J9 and run a fill: the leak check then tests the ball valve alone, which
+is the one holding pressure at rest. Refit afterwards.
+
+**On arrival:**
+
+| Check | Why |
+|---|---|
+| Scratch test inside a port | Plated brass shows yellow; it goes back |
+| **Coil current at 24 V** | Wattage was never stated. **Over 0.45 A (about 11 W), fit the spare F2 part (1.1 A hold, C142747, same 1812 package) in F3's place**, or F3 trips on every fill. Typical coils on this series are 10 to 20 W |
+| Clicks open on 24 V, shuts cleanly | Bench, before it goes near water |
+| Opens at low pressure | It runs behind a 2 L/min restrictor. The ½" size in this series is normally direct acting; the 1" photo on the listing is the pilot type. If it chatters or half-opens on the bench line, it is the wrong type |
+| Arrow with the flow | Diaphragm valves do not seal backwards |
+| Coil temperature after a long fill | DC coils run warm when held. A fill is a few minutes, fine |
+| Diode at its connector | D1 at J9 clamps the shared node, a second 1N4007 across the coil at its own plug covers the cable run. Band to the OPEN wire |
 
 | Requirement | Why |
 |---|---|
@@ -346,10 +390,6 @@ gland. No PCB change.
 | **Direct acting, 0 bar minimum** | A pilot-operated valve chatters or half-opens at 2 L/min |
 | **8 W or less** | F3 holds 500 mA. Above that, fit the spare F2 part (1.1 A hold, same 1812 package) in F3's place |
 | G½, 304 stainless body, NBR or EPDM seal | Same rules as everything else wetted. Scratch test on arrival |
-
-Candidate seen 3 Oct: AliExpress "2W series" stainless NC, direct acting,
-0 to 10 bar, 24 V DC option, female BSP, NBR or Viton. **Coil wattage
-not stated**; confirm with the seller. Variant: ½" (DN15), DC24V, NBR.
 
 ---
 
@@ -370,6 +410,14 @@ not stated**; confirm with the seller. Variant: ½" (DN15), DC24V, NBR.
 | DC2 barrel check | Plug in, meter on continuity: plug centre must beep to DC2's rear lug |
 
 ---
+
+## Changed 9 Oct 2026
+
+| Item | Change |
+|---|---|
+| **Backup solenoid** | Ordered early: ½", DC24V, NBR, stainless. Still a version 2 part, fitted after the main build works |
+| **Solenoid position** | Reviewed and kept directly after the ball valve |
+| **F3** | May become the 1.1 A part, depending on the solenoid's measured coil current |
 
 ## Changed 3 Oct 2026
 

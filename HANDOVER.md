@@ -21,10 +21,23 @@ cable comes up through the base gland, crosses the upper chamber and
 must leave through the lid too. A third stainless M16 gland is needed;
 two are on order.
 
+**6 Oct:** cable glands, jumpers, nylon nuts and brass inserts received.
+Still waiting on the PCB, the flow restrictor and the Berkey lid.
+
+**9 Oct: backup solenoid ordered** (½", DC24V, NBR, stainless, NC).
+Still a version 2 part, fitted once the main build works. Position
+reviewed and kept directly after the ball valve. **Measure its coil
+current on arrival**: over 0.45 A, F3 becomes the 1.1 A part. See
+"Decided on 9 Oct" and BOM.md, "Backup solenoid".
+
 Probe addressing, settled: **address 1 = upper chamber, address 2 =
 lower chamber.** Label the physical units. See "The addressing trap".
 
-## Next session: start here (updated 3 Oct 2026)
+## Next session: start here (updated 9 Oct 2026)
+
+When the solenoid arrives: scratch test inside a port, measure coil
+current at 24 V (sets F3), confirm it clicks open and shuts cleanly on
+the bench, check the flow arrow. Not plumbed in until v2.
 
 ### Done 2 and 3 Oct
 
@@ -67,6 +80,16 @@ file updated to match.
 | 11 | The `waterfilter.yaml` PCB switch-over: GPIO25/26 drop `inverted`, GPIO33 drop `pullup`, drop `flow_control_pin`, header comments, K factor | NETLIST section 7 |
 
 ---
+
+## Decided on 9 Oct
+
+| # | Decision |
+|---|---|
+| 1 | **Backup solenoid bought now**: ½" (DN15, matches the G½ run), DC24V (the existing rail), NBR. Viton rejected, it pays off only with hot or chlorinated water |
+| 2 | **Stays directly after the ball valve.** At rest the ball valve holds mains pressure and the solenoid sees none; upstream would put the less proven diaphragm seal under pressure 24/7 for no gain |
+| 3 | **Wiring unchanged from 3 Oct**: parallel with OPEN at J9, no PCB change. Confirmed against `waterfilter.yaml`: both relays stay on for the whole fill, so the solenoid stays open; on a stop K1 drops at once and the solenoid shuts in under a second while the ball valve closes dry behind it |
+| 4 | **Accepted:** in series, the leak check only catches both valves passing. Yearly check of the ball valve alone with the solenoid's ferrule lifted |
+| 5 | **F3 sizing waits for a measurement.** Coil wattage not stated; over 0.45 A, the spare 1.1 A F2 part goes in F3's place |
 
 ## Decided on 3 Oct
 
@@ -411,9 +434,10 @@ sensor.
 - **Rejected as over-engineering**: modulating valve with position
   feedback.
 - **Dropped, not deferred**: a second independent RS-485 bus.
-- **Deferred to a version 2**: a floor leak sensor, and a backup solenoid
-  directly after the main valve, wired in parallel with its open winding
-  at J9 (no PCB change; spare gland hole ready).
+- **Deferred to a version 2**: a floor leak sensor, and fitting the
+  backup solenoid (**bought 9 Oct**) directly after the main valve,
+  wired in parallel with its open winding at J9 (no PCB change; spare
+  gland hole ready).
 
 ---
 
@@ -422,7 +446,7 @@ sensor.
 See `physical-layout.html` for the full picture. In summary:
 
 - **Water path**: supply → shutoff → union → **flow sensor** → union →
-  restrictor → valve → (future solenoid) → lid inlet. The sensor stays
+  restrictor → valve → (backup solenoid, bought, fitted in v2) → lid inlet. The sensor stays
   full and pressurised; the restrictor stays after it.
 - **Lower probe**: cable gland only, M16 × 1.5, 304 stainless, EPDM. **This
   port is wet** — gland body and flange O-ring on the **upper** side,
